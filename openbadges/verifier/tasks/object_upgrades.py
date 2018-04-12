@@ -66,13 +66,16 @@ def upgrade_1_1_node(state, task_meta, **options):
         # Do badgeclass upgrades
         if data.get('alignment'):
             alignment_fixed = False
-            alignment_node = data['alignment'].copy()
-            for term, new_term in [('url', 'targetUrl'), ('name', 'targetName'), ('description', 'targetDescription')]:
-                if alignment_node.get(term) and not alignment_node.get(new_term):
-                    alignment_fixed = True
-                    alignment_node[new_term] = alignment_node.pop(term)
+            alignment_node_list = data['alignment'].copy()
+            if not isinstance(alignment_node_list,list):
+                alignment_node_list = [alignment_node_list]
+            for alignment_node in alignment_node_list:
+                for term, new_term in [('url', 'targetUrl'), ('name', 'targetName'), ('description', 'targetDescription')]:
+                    if alignment_node.get(term) and not alignment_node.get(new_term):
+                        alignment_fixed = True
+                        alignment_node[new_term] = alignment_node.pop(term)
             if alignment_fixed:
-                patch = {'alignment': alignment_node}
+                patch = {'alignment': alignment_node_list}
                 actions.append(patch_node(node_id, patch))
     if actions:
         return task_result(True, "Node {} upgraded from v1.1 to 2.0".format(node_id), actions)
